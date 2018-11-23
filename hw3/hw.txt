@@ -1,0 +1,133 @@
+import numpy as np
+from skimage import filters, morphology
+import matplotlib.pyplot as plt
+import random
+import math
+from PIL import Image
+
+
+img = Image.open('sample.jpg')
+img.load()
+data = np.asarray(img, dtype=np.int32)
+
+sp_data = np.copy(data)
+sp_data.shape
+
+n = 4000
+
+for _ in range(n):
+    i = random.randint(0, sp_data.shape[0] - 1)
+    j = random.randint(0, sp_data.shape[1] - 1)
+
+    flag = bool(random.getrandbits(1))
+    
+    for _ in range(3):
+        if flag:
+            sp_data[i][j][_] = 255
+        else:
+            sp_data[i][j][_] = 0
+
+
+
+plt.figure(figsize=(20,10))
+plt.imshow(sp_data, interpolation='nearest')
+
+mf_data = np.copy(np.rollaxis(data, 2))
+mf_data.shape
+
+
+for _ in range(mf_data.shape[0]):
+    mf_data[_] = filters.median(mf_data[_], morphology.square(9))
+mf_data = np.rollaxis(mf_data, 2)
+mf_data = np.rollaxis(mf_data, 2)
+mf_data.shape
+
+
+plt.figure(figsize=(20,10))
+plt.imshow(mf_data, interpolation='nearest')
+
+
+
+bf_data = np.copy(np.rollaxis(data, 2))
+bf_data.shape
+
+
+
+for _ in range(bf_data.shape[0]):
+    bf_data[_] = filters.rank.mean(bf_data[_], morphology.square(9))
+bf_data = np.rollaxis(bf_data, 2)
+bf_data = np.rollaxis(bf_data, 2)
+bf_data.shape
+
+plt.figure(figsize=(20,10))
+plt.imshow(bf_data, interpolation='nearest')
+
+
+
+gf_data = np.copy(data)
+gf_data.shape
+
+gf_data = filters.gaussian(gf_data, sigma=1, multichannel=True, preserve_range=True).astype(np.int32)
+
+plt.figure(figsize=(20,10))
+plt.imshow(gf_data, interpolation='nearest')
+
+
+
+mf2_data = np.copy(np.rollaxis(data, 2))
+mf2_data.shape
+
+def median_filter(data, wsize):
+    h = data.shape[0]
+    w = data.shape[1]
+    d = math.floor(wsize/2)
+    res = np.empty_like(data)
+    for i in range(h):
+        for j in range(w):
+            tmp = data[max(0,i-d):min(h,i+d), max(0,j-d):min(w,j+d)]
+            res[i][j] = np.median(tmp)
+    return res
+
+
+for _ in range(mf2_data.shape[0]):
+    mf2_data[_] = median_filter(mf2_data[_], 9)
+mf2_data = np.rollaxis(mf2_data, 2)
+mf2_data = np.rollaxis(mf2_data, 2)
+mf2_data.shape
+
+
+plt.figure(figsize=(20,10))
+plt.imshow(mf2_data, interpolation='nearest')
+
+
+bf2_data = np.copy(np.rollaxis(data, 2))
+bf2_data.shape
+
+def box_filter(data, wsize):
+    h = data.shape[0]
+    w = data.shape[1]
+    d = math.floor(wsize/2)
+    res = np.empty_like(data)
+    for i in range(h):
+        for j in range(w):
+            tmp = data[max(0,i-d):min(h,i+d), max(0,j-d):min(w,j+d)]
+            res[i][j] = np.mean(tmp)
+    return res
+
+
+for _ in range(bf2_data.shape[0]):
+    bf2_data[_] = box_filter(bf2_data[_], 9)
+bf2_data = np.rollaxis(bf2_data, 2)
+bf2_data = np.rollaxis(bf2_data, 2)
+bf2_data.shape
+
+plt.figure(figsize=(20,10))
+plt.imshow(bf2_data, interpolation='nearest')
+
+
+
+
+
+
+
+
